@@ -17,7 +17,8 @@ const app = {
         history: [],
         settings: {
             watermark: false,
-            adminPass: '1234'
+            adminPass: '1234',
+            logoUrl: 'berryslr_logo.png'
         }
     },
 
@@ -27,6 +28,7 @@ const app = {
         this.renderCatalog();
         this.renderDailySheet();
         this.updateDateDisplay();
+        this.updateLogoUI();
         this.switchRole('client');
 
         // Register Service Worker
@@ -83,13 +85,13 @@ const app = {
                     b.classList.remove('btn-primary');
                     b.classList.add('btn-ghost');
                 });
-                
+
                 document.getElementById(tabId).style.display = 'block';
                 e.currentTarget.classList.add('btn-primary');
                 e.currentTarget.classList.remove('btn-ghost');
-                
-                if(tabId === 'tab-precios') this.renderAdminProducts();
-                if(tabId === 'tab-historial') this.renderHistory();
+
+                if (tabId === 'tab-precios') this.renderAdminProducts();
+                if (tabId === 'tab-historial') this.renderHistory();
             });
         });
     },
@@ -124,7 +126,7 @@ const app = {
         const list = document.getElementById('product-list');
         list.innerHTML = this.state.products.map(p => `
             <div class="product-card glass">
-                <img src="${p.img}" alt="${p.name}" class="product-image">
+                <img src="${p.img}" alt="${p.name}" class="product-image" onerror="this.src='https://via.placeholder.com/400x300?text=${encodeURIComponent(p.name)}'">
                 <div class="product-info">
                     <div class="product-meta">
                         <span>${p.weight}</span>
@@ -169,15 +171,15 @@ const app = {
 
     updateRow(idx, field, value) {
         this.state.dailySales[idx][field] = parseFloat(value) || 0;
-        
+
         const row = this.state.dailySales[idx];
         const product = this.state.products.find(p => p.id == row.prodId);
-        
+
         if (product) {
             const unitPrice = product.hasDiscount ? product.price - product.discount : product.price;
             row.total = row.kilos * unitPrice;
             row.income = row.total - row.costs;
-            
+
             document.getElementById(`row-total-${idx}`).textContent = `$${this.formatNumber(row.total)}`;
             document.getElementById(`row-income-${idx}`).textContent = `$${this.formatNumber(row.income)}`;
         }
@@ -187,13 +189,20 @@ const app = {
     renderAdminProducts() {
         const container = document.getElementById('admin-product-list');
         container.innerHTML = this.state.products.map(p => `
-            <div class="glass" style="padding:15px; margin-bottom:10px; display:flex; gap:20px; align-items:center;">
-                <div style="flex:1"><strong>${p.name}</strong> (${p.weight})</div>
-                <div style="width:120px">
+            <div class="glass" style="padding:15px; margin-bottom:10px; display:grid; grid-template-columns: 1fr 1fr 1fr 1fr auto; gap:15px; align-items:end;">
+                <div style="grid-column: span 5; display:flex; gap:10px; align-items:center; border-bottom: 1px solid var(--glass-border); padding-bottom:10px; margin-bottom:5px;">
+                    <img src="${p.img}" style="width:40px; height:40px; border-radius:8px; object-fit:cover;" onerror="this.src='https://via.placeholder.com/40/000/fff?text=?'">
+                    <strong>${p.name}</strong> (${p.weight})
+                </div>
+                <div>
+                    <label style="font-size:0.7rem; color:var(--text-muted)">Imagen (URL)</label>
+                    <input type="text" value="${p.img}" onchange="app.updateProduct(${p.id}, 'img', this.value)">
+                </div>
+                <div>
                     <label style="font-size:0.7rem; color:var(--text-muted)">Precio ($)</label>
                     <input type="number" value="${p.price}" onchange="app.updateProduct(${p.id}, 'price', this.value)">
                 </div>
-                <div style="width:120px">
+                <div>
                     <label style="font-size:0.7rem; color:var(--text-muted)">Desc. ($)</label>
                     <input type="number" value="${p.discount}" onchange="app.updateProduct(${p.id}, 'discount', this.value)">
                 </div>
@@ -217,11 +226,11 @@ const app = {
     saveDailySales() {
         const date = new Date().toLocaleDateString();
         const shift = document.getElementById('shift-select').value;
-        
+
         // Calculate totals for logging
         const dayTotal = this.state.dailySales.reduce((sum, r) => sum + r.total, 0);
         const dayIncome = this.state.dailySales.reduce((sum, r) => sum + r.income, 0);
-        
+
         if (dayTotal === 0) {
             alert('No hay ventas para guardar');
             return;
@@ -236,11 +245,11 @@ const app = {
         };
 
         this.state.history.push(logEntry);
-        
+
         // Update product activity volume
         logEntry.rows.forEach(r => {
             const p = this.state.products.find(prod => prod.id == r.prodId);
-            if(p) p.sales += r.qty;
+            if (p) p.sales += r.qty;
         });
 
         // Reset sheet
@@ -271,6 +280,31 @@ const app = {
 
     updateDateDisplay() {
         document.getElementById('current-date').textContent = new Date().toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    },
+
+    updateLogoUI() {
+        const logo = document.getElementById('header-logo');
+        if (logo) {
+            logo.src = this.state.settings.logoUrl || 'berryslr_logo.png';
+            logo.onerror = () => { logo.src = 'https://via.placeholder.com/150?text=BerrysLr'; };
+        }
+        const configInput = document.getElementById('config-logo-url');
+        if (configInput) {
+            configInput.value = this.state.settings.logoUrl === 'berryslr_logo.png' ? '' : this.state.settings.logoUrl;
+        }
+    },
+
+    updateLogoFromConfig() {
+        const url = document.getElementById('config-logo-url').value.trim();
+        this.state.settings.logoUrl = url || 'berryslr_logo.png';
+        this.saveLocalData();
+        this.updateLogoUI();
+        alert('Logo actualizado');
+    },
+
+    updateSetting(key, value) {
+        this.state.settings[key] = value;
+        this.saveLocalData();
     },
 
     formatNumber(n) {

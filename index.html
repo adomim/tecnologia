@@ -109,10 +109,25 @@
                 <h3>Ajustes Generales</h3>
                 <div style="margin-top: 20px; display: grid; gap: 20px;">
                     <div class="glass" style="padding: 20px;">
-                        <label>Marca de agua en planillas</label>
-                        <input type="checkbox" id="toggle-watermark">
+                        <h4 style="margin-bottom:10px;">Personalización de Marca</h4>
+                        <label style="font-size: 0.8rem; color: var(--text-muted);">URL del Logo</label>
+                        <div style="display: flex; gap: 10px; margin-top: 5px;">
+                            <input type="text" id="config-logo-url" placeholder="https://ejemplo.com/logo.png">
+                            <button class="btn btn-primary" onclick="app.updateLogoFromConfig()">Actualizar</button>
+                        </div>
+                        <small style="color: var(--text-muted); display: block; margin-top: 5px;">Deja en blanco para volver al logo predeterminado.</small>
                     </div>
-                    <button class="btn btn-danger" onclick="app.resetData()">Reiniciar Datos</button>
+                    
+                    <div class="glass" style="padding: 20px;">
+                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                            <input type="checkbox" id="toggle-watermark" style="width: auto;" onchange="app.updateSetting('watermark', this.checked)">
+                            <span>Marca de agua en planillas</span>
+                        </label>
+                    </div>
+                    
+                    <button class="btn" style="background: var(--danger); color: white;" onclick="app.resetData()">
+                        <i class="fa-solid fa-trash-can"></i> Reiniciar Datos e Historial
+                    </button>
                 </div>
             </div>
         </section>
