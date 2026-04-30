@@ -17,7 +17,7 @@ const app = {
         history: [],
         settings: {
             watermark: false,
-            adminPass: '1234',
+            adminPass: '2819',
             logoUrl: 'berryslr_logo.png'
         }
     },
