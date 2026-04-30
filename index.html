@@ -1,18 +1,151 @@
 <!DOCTYPE html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BerrysLr | Frutas Congeladas</title>
-    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+</head>
+<body>
+    <header class="glass">
+        <div class="logo-container">
+            <img id="header-logo" src="berryslr_logo.png" alt="BerrysLr" class="logo-img">
+            <h1 class="logo-text">BerrysLr</h1>
+        </div>
+        <div class="nav-controls">
+            <span id="role-indicator" class="profile-badge badge-client">Cliente</span>
+            <button id="btn-login" class="btn btn-ghost">
+                <i class="fa-solid fa-user-gear"></i>
+                <span>Panel Jefe</span>
+            </button>
+            <button id="btn-logout" class="btn btn-ghost" style="display: none;">
+                <i class="fa-solid fa-right-from-bracket"></i>
+                <span>Salir</span>
+            </button>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- View: Product Catalog (Public) -->
+        <section id="view-catalog" class="view active">
+            <div class="section-header" style="margin-bottom: 30px;">
+                <h2 style="font-size: 2rem;">Nuestro Catálogo</h2>
+                <p style="color: var(--text-muted);">Fruta seleccionada y congelada con el mejor sabor.</p>
+            </div>
+            <div id="product-list" class="product-grid">
+                <!-- Products will be injected here -->
+            </div>
+        </section>
+
+        <!-- View: Cart Selection -->
+        <section id="view-cart" class="view">
+            <!-- Modal or separate section for selection summary -->
+        </section>
+
+        <!-- View: Admin Dashboard -->
+        <section id="view-admin" class="view">
+            <div class="admin-tabs" style="display: flex; gap: 10px; margin-bottom: 20px;">
+                <button class="btn btn-primary admin-tab-btn" data-tab="tab-planilla">Planillas</button>
+                <button class="btn btn-ghost admin-tab-btn" data-tab="tab-precios">Gestión Precios</button>
+                <button class="btn btn-ghost admin-tab-btn" data-tab="tab-historial">Historial</button>
+                <button class="btn btn-ghost admin-tab-btn" data-tab="tab-config">Configuración</button>
+            </div>
+
+            <!-- Tab: Planilla -->
+            <div id="tab-planilla" class="admin-tab-content glass" style="padding: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3>Ventas del Día: <span id="current-date"></span></h3>
+                    <div style="display: flex; gap: 10px;">
+                        <select id="shift-select" style="width: auto;">
+                            <option value="mañana">Turno Mañana</option>
+                            <option value="tarde">Turno Tarde</option>
+                        </select>
+                        <button class="btn btn-primary" onclick="app.saveDailySales()">Guardar Día</button>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table id="sales-sheet">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Producto</th>
+                                <th>Cant.</th>
+                                <th>Kilos</th>
+                                <th>Costos ($)</th>
+                                <th>Total Compra ($)</th>
+                                <th>Ingreso ($)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="sales-rows">
+                            <!-- 50 rows will be injected here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tab: Precios -->
+            <div id="tab-precios" class="admin-tab-content glass" style="display: none; padding: 20px;">
+                <h3>Ajuste de Precios y Descuentos</h3>
+                <div id="admin-product-list" style="margin-top: 20px;">
+                    <!-- Admin product cards -->
+                </div>
+            </div>
+
+            <!-- Tab: Historial -->
+            <div id="tab-historial" class="admin-tab-content glass" style="display: none; padding: 20px;">
+                <h3>Historial de Ventas</h3>
+                <div id="history-container">
+                    <!-- History logs -->
+                </div>
+            </div>
+
+            <!-- Tab: Configuración -->
+            <div id="tab-config" class="admin-tab-content glass" style="display: none; padding: 20px;">
+                <h3>Ajustes Generales</h3>
+                <div style="margin-top: 20px; display: grid; gap: 20px;">
+                    <div class="glass" style="padding: 20px;">
+                        <h4 style="margin-bottom:10px;">Personalización de Marca</h4>
+                        <label style="font-size: 0.8rem; color: var(--text-muted);">URL del Logo</label>
+                        <div style="display: flex; gap: 10px; margin-top: 5px;">
+                            <input type="text" id="config-logo-url" placeholder="https://ejemplo.com/logo.png">
+                            <button class="btn btn-primary" onclick="app.updateLogoFromConfig()">Actualizar</button>
+                        </div>
+                        <small style="color: var(--text-muted); display: block; margin-top: 5px;">Deja en blanco para volver al logo predeterminado.</small>
+                    </div>
+                    
+                    <div class="glass" style="padding: 20px;">
+                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                            <input type="checkbox" id="toggle-watermark" style="width: auto;" onchange="app.updateSetting('watermark', this.checked)">
+                            <span>Marca de agua en planillas</span>
+                        </label>
+                    </div>
+                    
+                    <button class="btn" style="background: var(--danger); color: white;" onclick="app.resetData()">
+                        <i class="fa-solid fa-trash-can"></i> Reiniciar Datos e Historial
+                    </button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal: Secret Password -->
+    <div id="modal-auth" class="modal-overlay">
+        <div class="modal-content glass">
+            <h3>Acceso Administrativo</h3>
+            <p style="margin: 10px 0; color: var(--text-muted);">Ingrese la contraseña de Jefe</p>
+            <input type="password" id="admin-pass" placeholder="Contraseña" style="margin-bottom: 20px;">
+            <div style="display: flex; gap: 10px;">
+                <button id="btn-auth-confirm" class="btn btn-primary" style="flex: 1;">Entrar</button>
+                <button id="btn-auth-cancel" class="btn btn-ghost">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
 </html>
