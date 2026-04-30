@@ -14,6 +14,18 @@ const App = () => {
   const [newProduct, setNewProduct] = useState({ name: '', price: 0, weight: '', img: '' });
   const [watermark, setWatermark] = useState(false);
 
+  const seedDatabase = async () => {
+    const sampleProducts = [
+      { name: 'Arándanos', price: 2000, weight: '1kg', img: 'https://images.unsplash.com/photo-1498557850523-fd3d118b962e?auto=format&fit=crop&q=80&w=400', sales: 60, hasDiscount: false, discount: 0 },
+      { name: 'Mix Patagónico', price: 2500, weight: '1kg', img: 'https://images.unsplash.com/photo-1596591606975-97ee5cef3a1e?auto=format&fit=crop&q=80&w=400', sales: 30, hasDiscount: true, discount: 500 },
+      { name: 'Frutilla', price: 1800, weight: '1kg', img: 'https://images.unsplash.com/photo-1464965911861-746a04b4bca6?auto=format&fit=crop&q=80&w=400', sales: 10, hasDiscount: false, discount: 0 }
+    ];
+    for (const p of sampleProducts) {
+      await addDoc(collection(db, 'products'), p);
+    }
+    alert('Base de datos inicializada con éxito');
+  };
+
   // Sync products from Firestore
   useEffect(() => {
     const unsub = onSnapshot(collection(db, 'products'), (snapshot) => {
@@ -48,14 +60,12 @@ const App = () => {
   };
 
   const openPicker = () => {
-    // Placeholder for Google Picker API
-    alert('Integrando Google Picker API para seleccionar desde Drive...');
-    // Real implementation would call gapi.picker
+    alert('Integrando Google Picker API...');
   };
 
   return (
     <div className="container" style={{ position: 'relative', minHeight: '100vh', paddingBottom: '100px' }}>
-      <header className="glass" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px', marginBottom: '40px', position: 'sticky', top: '20px', z-index: 100 }}>
+      <header className="glass" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px', marginBottom: '40px', position: 'sticky', top: '20px', zIndex: 100 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
           <img src="/berryslr_logo.png" alt="Logo" style={{ width: '50px', height: '50px', borderRadius: '50%' }} />
           <div>
@@ -84,7 +94,21 @@ const App = () => {
       </header>
 
       <main>
-        {view === 'catalog' && <ProductCatalog products={products} onAddToCart={(p) => alert(`Añadido: ${p.name}`)} />}
+        {view === 'catalog' && (
+          <>
+            {products.length === 0 && (
+              <div style={{ textAlign: 'center', padding: '50px' }}>
+                <p style={{ color: 'var(--text-muted)' }}>No hay productos en la base de datos.</p>
+                {role === 'boss' && (
+                  <button className="btn btn-primary" style={{ marginTop: '20px' }} onClick={seedDatabase}>
+                    Inicializar con Datos de Ejemplo
+                  </button>
+                )}
+              </div>
+            )}
+            <ProductCatalog products={products} onAddToCart={(p) => alert(`Añadido: ${p.name}`)} />
+          </>
+        )}
         
         {role === 'boss' && view === 'sheet' && (
           <AdminSheet products={products} watermark={watermark} />
